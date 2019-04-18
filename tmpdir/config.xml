@@ -1,0 +1,71 @@
+<PhysiCell_settings version="devel-version">
+	<domain>
+		<x_min>-500.0</x_min>
+		<x_max>500.0</x_max>
+		<y_min>-500.0</y_min>
+		<y_max>500.0</y_max>
+		<z_min>-10.0</z_min>
+		<z_max>10.0</z_max>
+		<dx>20.0</dx>
+		<dy>20.0</dy>
+		<dz>20.0</dz>
+		<use_2D>true</use_2D>
+	</domain>
+	
+	<overall>
+		<max_time units="min">9000.0</max_time> 
+		<time_units>min</time_units>
+		<space_units>micron</space_units>
+	</overall>
+	
+	<parallel>
+		<omp_num_threads>4</omp_num_threads>
+	</parallel> 
+	
+	<save>
+		<folder>.</folder>  
+
+		<full_data>
+			<interval units="min">500</interval>
+			<enable>True</enable>
+		</full_data>
+		
+		<SVG>
+			<interval units="min">60</interval>
+			<enable>True</enable>
+		</SVG>
+		
+		<legacy_data>
+			<enable>false</enable>
+		</legacy_data>
+	</save>
+	
+	<user_parameters>
+		<random_seed type="int" units="dimensionless">0</random_seed> 
+		 
+		
+		
+		<infection_o2_relative_uptake type="double" units="1/min">0.5</infection_o2_relative_uptake> 
+		<infection_persistence_time type="double" units="min">5.0</infection_persistence_time>
+		<infection_migration_speed type="double" units="micron/min">0.4</infection_migration_speed> 
+		<unattached_infection_migration_bias type="double" units="micron/min">0.0</unattached_infection_migration_bias>
+		<infection_apoptosis_rate type="double" units="1/min">0.0</infection_apoptosis_rate> 
+		<infection_relative_cycle_entry_rate type="double" units="dimensionless">0.0166</infection_relative_cycle_entry_rate>
+
+		<scout_o2_relative_uptake type="double" units="1/min">0.02</scout_o2_relative_uptake>
+		<scout_apoptosis_rate type="double" units="1/min">0.0</scout_apoptosis_rate>
+		<scout_persistence_time type="double" units="min">10.0</scout_persistence_time>
+		<scout_migration_speed type="double" units="micron/min">0.1</scout_migration_speed> 
+		<unattached_scout_migration_bias type="double" units="micron/min">0.7</unattached_scout_migration_bias>
+		<scout_apoptosis_rate type="double" units="1/min">0.0</scout_apoptosis_rate> 
+		<scout_relative_cycle_entry_rate type="double" units="dimensionless">0.0</scout_relative_cycle_entry_rate>
+		<scout_relative_adhesion type="double" units="dimensionless">0.0</scout_relative_adhesion>
+		<scout_relative_repulsion type="double" units="dimensionless">10.0</scout_relative_repulsion> 
+
+		<number_of_infection type="int" units="dimensionless">20</number_of_infection>
+		<number_of_scouts type="int" units="dimensionless">10</number_of_scouts>
+		
+	</user_parameters>
+	
+	
+</PhysiCell_settings>
