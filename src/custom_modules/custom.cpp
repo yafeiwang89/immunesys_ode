@@ -318,7 +318,7 @@ void setup_tissue( void )
 	
 	// randomly place seed cells 
 	
-	std::vector<double> position(3.0, 0.0); 
+	std::vector<double> position={3.0, 0.0}; 
 
 	x_0 = default_microenvironment_options.X_range[0]; 
 	x_1 = default_microenvironment_options.X_range[1];
@@ -775,7 +775,7 @@ void setup_new_cells(int scout_cells, int trained_cells){
 	
 	// randomly place seed cells 
 	
-	std::vector<double> position(5.0, 0.0); 
+	std::vector<double> position={5.0, 0.0}; 
 
 	x_0 = default_microenvironment_options.X_range[0]; 
 	x_1 = default_microenvironment_options.X_range[1];
