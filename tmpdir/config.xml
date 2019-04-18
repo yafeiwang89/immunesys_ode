@@ -45,25 +45,25 @@
 		 
 		
 		
-		<infection_o2_relative_uptake type="double" units="1/min">0.5</infection_o2_relative_uptake> 
-		<infection_persistence_time type="double" units="min">5.0</infection_persistence_time>
-		<infection_migration_speed type="double" units="micron/min">0.4</infection_migration_speed> 
-		<unattached_infection_migration_bias type="double" units="micron/min">0.0</unattached_infection_migration_bias>
-		<infection_apoptosis_rate type="double" units="1/min">0.0</infection_apoptosis_rate> 
+		<infection_o2_relative_uptake description="the oxygen uptake rate of infection cell" type="double" units="1/min">0.5</infection_o2_relative_uptake> 
+		<infection_persistence_time description="the persistence time of infection cell motility" type="double" units="min">5.0</infection_persistence_time>
+		<infection_migration_speed description="the migration speed of infection cell motility" type="double" units="micron/min">0.4</infection_migration_speed> 
+		<unattached_infection_migration_bias description="the migration bias of unattached infection cell" type="double" units="micron/min">0.0</unattached_infection_migration_bias>
+		<infection_apoptosis_rate description="the apoptosis rate of infection cell" type="double" units="1/min">0.0</infection_apoptosis_rate> 
 		<infection_relative_cycle_entry_rate type="double" units="dimensionless">0.0166</infection_relative_cycle_entry_rate>
 
-		<scout_o2_relative_uptake type="double" units="1/min">0.02</scout_o2_relative_uptake>
-		<scout_apoptosis_rate type="double" units="1/min">0.0</scout_apoptosis_rate>
-		<scout_persistence_time type="double" units="min">10.0</scout_persistence_time>
-		<scout_migration_speed type="double" units="micron/min">0.1</scout_migration_speed> 
-		<unattached_scout_migration_bias type="double" units="micron/min">0.7</unattached_scout_migration_bias>
-		<scout_apoptosis_rate type="double" units="1/min">0.0</scout_apoptosis_rate> 
+		<scout_o2_relative_uptake description="the oxygen uptake rate of scout cell" type="double" units="1/min">0.02</scout_o2_relative_uptake>
+		<scout_apoptosis_rate description="the apoptosis rate of scout cell" type="double" units="1/min">0.0</scout_apoptosis_rate>
+		<scout_persistence_time description="the persistence time of scout cell motility" type="double" units="min">10.0</scout_persistence_time>
+		<scout_migration_speed description="the migration speed of scout cell motility" type="double" units="micron/min">0.1</scout_migration_speed> 
+		<unattached_scout_migration_bias description="the migration bias of unattached scout cell" type="double" units="micron/min">0.7</unattached_scout_migration_bias>
+		<scout_apoptosis_rate description="the apoptosis rate of scout cell" type="double" units="1/min">0.0</scout_apoptosis_rate> 
 		<scout_relative_cycle_entry_rate type="double" units="dimensionless">0.0</scout_relative_cycle_entry_rate>
-		<scout_relative_adhesion type="double" units="dimensionless">0.0</scout_relative_adhesion>
-		<scout_relative_repulsion type="double" units="dimensionless">10.0</scout_relative_repulsion> 
+		<scout_relative_adhesion description="the relative adhesion of scout cell" type="double" units="dimensionless">0.0</scout_relative_adhesion>
+		<scout_relative_repulsion description="the relative repulsion of scout cell" type="double" units="dimensionless">10.0</scout_relative_repulsion> 
 
-		<number_of_infection type="int" units="dimensionless">20</number_of_infection>
-		<number_of_scouts type="int" units="dimensionless">10</number_of_scouts>
+		<number_of_infection description="the number of infection cell" type="int" units="dimensionless">20</number_of_infection>
+		<number_of_scouts description="the number of scouts cell" type="int" units="dimensionless">10</number_of_scouts>
 		
 	</user_parameters>
 	
