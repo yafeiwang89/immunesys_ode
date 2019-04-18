@@ -1,4 +1,4 @@
 #!/bin/sh
 
-/usr/bin/invoke_app "$@" -C "start_jupyter -A -T @tool immunesys_ode.ipynb" -t immunesys_ode \
+/usr/bin/invoke_app "$@" -C "start_jupyter -A -T @tool immunesys_ode.ipynb" -t immunesys2ode \
                          -u anaconda3-5.1
