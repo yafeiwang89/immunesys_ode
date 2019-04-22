@@ -117,4 +117,6 @@ void setup_microenvironment( void );
 
 std::vector<std::string> my_coloring_function( Cell* );
 void ode_func(double dt);
+std::vector<Cell*> get_possible_neighbors( Cell* pCell );
 
+void read_write_function(void);

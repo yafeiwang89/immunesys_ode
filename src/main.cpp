@@ -182,6 +182,8 @@ int main( int argc, char* argv[] )
 					sprintf( filename , "%s/output%08u" , PhysiCell_settings.folder.c_str(),  PhysiCell_globals.full_output_index ); 
 					
 					save_PhysiCell_to_MultiCellDS_xml_pugi( filename , microenvironment , PhysiCell_globals.current_time ); 
+					
+					read_write_function();  // save the cells data
 				}
 				
 				PhysiCell_globals.full_output_index++; 
@@ -213,6 +215,7 @@ int main( int argc, char* argv[] )
 
 			//printf("\nGlobal time is: %f, %d", PhysiCell_globals.current_time, PhysiCell_settings.ODE);
 			if (fabs(PhysiCell_globals.current_time - call_ODE_timestep) < 0.01 * diffusion_dt){
+				#pragma omp critical
 				ode_func(diffusion_dt);
 				call_ODE_timestep += call_ODE_timestep;
 			}

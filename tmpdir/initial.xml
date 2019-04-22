@@ -11,9 +11,9 @@
 		</software>
 		<citation />
 		<current_time units="min">0.000000</current_time>
-		<current_runtime units="sec">0.131000</current_runtime>
-		<created>2019-04-18T20:58:54Z</created>
-		<last_modified>2019-04-18T20:58:54Z</last_modified>
+		<current_runtime units="sec">0.097225</current_runtime>
+		<created>2019-04-22T22:00:10Z</created>
+		<last_modified>2019-04-22T22:00:10Z</last_modified>
 	</metadata>
 	<microenvironment>
 		<domain name="microenvironment">
@@ -82,7 +82,6 @@
 							<label index="22" size="3">motility_bias_direction</label>
 							<label index="25" size="1">persistence_time</label>
 							<label index="26" size="1">motility_reserved</label>
-							<label index="27" size="1">signal</label>
 						</labels>
 						<filename>initial_cells_physicell.mat</filename>
 					</simplified_data>

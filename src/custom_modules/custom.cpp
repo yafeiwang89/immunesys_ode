@@ -68,18 +68,16 @@
 #include "./custom.h"
 
 // declare cell definitions here 
-
 Cell_Definition infection_cell;
 Cell_Definition scout_cell;
 Cell_Definition immune_cell;
 
-float low = 0.0 ;
-float high = 0.0 ;
 double wait_time = 1000.0;
 static int scouts_left = 0 ;
 double x_0, x_1, y_0, y_1 = 0.0;
+double total_conc = 0.0;
 
-int untrained_immune_cell = 100, trained_immune_cell = 20; 
+static int untrained_immune_cell = 50, trained_immune_cell = 20; 
 
 void create_cell_types( void )
 {
@@ -118,11 +116,11 @@ void create_cell_types( void )
 	int necrosis_model_index = cell_defaults.phenotype.death.find_death_model_index( "Necrosis" );
 	int oxygen_substrate_index = microenvironment.find_density_index( "oxygen" ); 
 
-	cell_defaults.phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.01; 
+	cell_defaults.phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.0032; 
 
 	// initially no necrosis 
 	cell_defaults.phenotype.death.rates[necrosis_model_index] = 0.0; 
-	cell_defaults.phenotype.death.rates[apoptosis_model_index] = 0.0; 
+	cell_defaults.phenotype.death.rates[apoptosis_model_index] = 0.0001; 
 
 
 	// set oxygen uptake / secretion parameters for the default cell type 
@@ -132,12 +130,12 @@ void create_cell_types( void )
 	// set default uptake and secretion 
 	// oxygen 
 	cell_defaults.phenotype.secretion.secretion_rates[0] = 0; 
-	cell_defaults.phenotype.secretion.uptake_rates[0] = 0.0001; 
-	cell_defaults.phenotype.secretion.saturation_densities[0] = 1000.0;
+	cell_defaults.phenotype.secretion.uptake_rates[0] = 0.0002; 
+	cell_defaults.phenotype.secretion.saturation_densities[0] = 1.0;
  	
- 	cell_defaults.phenotype.secretion.secretion_rates[1] = 10.0; 
+ 	cell_defaults.phenotype.secretion.secretion_rates[1] = 0.5; 
 	cell_defaults.phenotype.secretion.uptake_rates[1] = 0.0; 
-	cell_defaults.phenotype.secretion.saturation_densities[1] = 50.0; 
+	cell_defaults.phenotype.secretion.saturation_densities[1] = 40.0; 
 
 	cell_defaults.phenotype.secretion.secretion_rates[2] = 0.0; 
 	cell_defaults.phenotype.secretion.uptake_rates[2] = 0.0; 
@@ -160,11 +158,10 @@ void create_cell_types( void )
 	
 	// set functions 
 	infection_cell.functions.update_migration_bias = update_infection_motility;	
-	//infection_cell.functions.update_phenotype = update_infection_phenotype;
+	infection_cell.functions.update_phenotype = update_infection_phenotype;
 
 	infection_cell.phenotype.mechanics.cell_cell_adhesion_strength = 0.0; 
 	infection_cell.phenotype.mechanics.cell_cell_repulsion_strength = 4.0; 
-	infection_cell.custom_data.add_variable("signal", "double", 0.0);
 
 	infection_cell.phenotype.mechanics.cell_cell_adhesion_strength = 0.5; 
 	infection_cell.phenotype.mechanics.cell_cell_repulsion_strength = 20.0;
@@ -185,17 +182,12 @@ void create_scout_cell(void){
 	int apoptosis_model_index = cell_defaults.phenotype.death.find_death_model_index( "Apoptosis" );
 	int cycle_start_index = live.find_phase_index( PhysiCell_constants::live ); 
 	int cycle_end_index = live.find_phase_index( PhysiCell_constants::live ); 
-	scout_cell.phenotype.cycle.data.transition_rate(cycle_start_index, cycle_end_index) = 0.0000002; // 0.2; 
+	scout_cell.phenotype.cycle.data.transition_rate(cycle_start_index, cycle_end_index) = 0.0001; // 0.2; 
 	
-	scout_cell.custom_data.add_variable("signal", "double", 0.0);
 	scout_cell.custom_data.add_variable("trained", "dimensionless", 0.0);
 	scout_cell.custom_data.add_variable("wait_time", "dimensionless", 0.0);
 
 	scout_cell.phenotype.secretion.secretion_rates[0] = 0.0; 
-	scout_cell.phenotype.secretion.uptake_rates[0] = 0.05; 
-	scout_cell.phenotype.secretion.saturation_densities[0] = 1.0; 
-
-	scout_cell.phenotype.secretion.secretion_rates[0] = 0.0; 
 	scout_cell.phenotype.secretion.uptake_rates[0] = 0.0; 
 	scout_cell.phenotype.secretion.saturation_densities[0] = 0.0; 
 
@@ -203,8 +195,12 @@ void create_scout_cell(void){
 	scout_cell.phenotype.secretion.uptake_rates[0] = 0.0; 
 	scout_cell.phenotype.secretion.saturation_densities[0] = 0.0; 
 
+	scout_cell.phenotype.secretion.secretion_rates[0] = 0.0; 
+	scout_cell.phenotype.secretion.uptake_rates[0] = 0.0; 
+	scout_cell.phenotype.secretion.saturation_densities[0] = 0.0; 
 
-	scout_cell.phenotype.death.rates[apoptosis_model_index] = 0.0 ; 
+
+	scout_cell.phenotype.death.rates[apoptosis_model_index] = 0.0001 ; 
 
 	// turn on motility; 
 	scout_cell.phenotype.motility.is_motile = true; 
@@ -232,12 +228,12 @@ void create_immune_cell(void){
 	int apoptosis_model_index = cell_defaults.phenotype.death.find_death_model_index( "Apoptosis" );
 	int cycle_start_index = live.find_phase_index( PhysiCell_constants::live ); 
 	int cycle_end_index = live.find_phase_index( PhysiCell_constants::live ); 
-	immune_cell.phenotype.cycle.data.transition_rate(cycle_start_index, cycle_end_index) = 0.002; // 0.2; 
+	immune_cell.phenotype.cycle.data.transition_rate(cycle_start_index, cycle_end_index) = 0.001; // 0.2; 
 	
 	immune_cell.custom_data.add_variable("wait_time", "dimensionless", 0.0);
 
 	immune_cell.phenotype.secretion.secretion_rates[0] = 0.0; 
-	immune_cell.phenotype.secretion.uptake_rates[0] = 0.05; 
+	immune_cell.phenotype.secretion.uptake_rates[0] = 0.0; 
 	immune_cell.phenotype.secretion.saturation_densities[0] = 1.0; 
 
 	immune_cell.phenotype.secretion.secretion_rates[0] = 0.0; 
@@ -248,15 +244,15 @@ void create_immune_cell(void){
 	immune_cell.phenotype.secretion.uptake_rates[0] = 0.0; 
 	immune_cell.phenotype.secretion.saturation_densities[0] = 0.0; 
 
-	immune_cell.phenotype.death.rates[apoptosis_model_index] = 0.00001 ; 
+	immune_cell.phenotype.death.rates[apoptosis_model_index] = 0.0001 ; 
 
 	// turn on motility; 
 	immune_cell.phenotype.motility.is_motile = true; 
 	immune_cell.phenotype.motility.persistence_time = 10.0; 
 	immune_cell.phenotype.motility.migration_speed = 0.4;   
 
-	immune_cell.phenotype.mechanics.cell_cell_adhesion_strength = 2.0; 
-	immune_cell.phenotype.mechanics.cell_cell_repulsion_strength = 5.0; 
+	immune_cell.phenotype.mechanics.cell_cell_adhesion_strength = 0.0; 
+	immune_cell.phenotype.mechanics.cell_cell_repulsion_strength = 10.0; 
 
 	immune_cell.functions.update_migration_bias = update_immune_motility;	
 	immune_cell.functions.update_phenotype = update_immune_phenotype;
@@ -318,7 +314,7 @@ void setup_tissue( void )
 	
 	// randomly place seed cells 
 	
-	std::vector<double> position={3.0, 0.0}; 
+	std::vector<double> position = {3.0, 0.0, 0.0}; 
 
 	x_0 = default_microenvironment_options.X_range[0]; 
 	x_1 = default_microenvironment_options.X_range[1];
@@ -335,10 +331,6 @@ void setup_tissue( void )
 	// Creating 10 tumor cells, 15 normal and 5 scout and assigning random position.
 
 	Cell* pC;
-	int signal = 0;
-
-	low = 0.7;
-	high = 1.0;
 
 	//Infection cell randomly
 	for( int n=0 ; n < number_of_infection ; n++ )
@@ -349,12 +341,7 @@ void setup_tissue( void )
 
 		pC = create_cell(infection_cell); 
 		pC->assign_position(position);
-		signal = pC->custom_data.find_variable_index("signal");
-		pC->custom_data[signal] = (low + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(high-low))));
 	}
-
-	low = 0.4;
-	high = 0.6;
 
 	// Scout cells
 	for( int n=0 ; n < number_of_scouts ; n++ )
@@ -367,8 +354,6 @@ void setup_tissue( void )
 
 		pC = create_cell(scout_cell);
 		pC->assign_position(position); 
-		signal = pC->custom_data.find_variable_index("signal");
-		pC->custom_data[signal] = (low + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(high-low))));
 	}
 
 	return; 
@@ -377,7 +362,7 @@ void setup_tissue( void )
 
 void update_infection_phenotype (Cell* pCell, Phenotype& phenotype, double dt){
 
-		if( phenotype.death.dead == true )
+		if( pCell->phenotype.death.dead == true )
 		{ 
 			pCell->functions.update_migration_bias = NULL; 
 			pCell->functions.update_phenotype = NULL;
@@ -386,36 +371,29 @@ void update_infection_phenotype (Cell* pCell, Phenotype& phenotype, double dt){
 
 		int apoptosis_model_index = cell_defaults.phenotype.death.find_death_model_index( "Apoptosis" );
 
-		// Sample microenvironment
-		static int chem_ind = microenvironment.find_density_index("chemoattractant");
-		double chem_conc = pCell->nearest_density_vector()[chem_ind]; 
-
-		static int o2_ind = microenvironment.find_density_index( "oxygen" );
+		int o2_ind = microenvironment.find_density_index( "oxygen" );
 		double o2_conc = pCell->nearest_density_vector()[o2_ind];
+
+		int chem_ind = microenvironment.find_density_index( "chemoattractant" );
 
 		int cycle_start_index = live.find_phase_index( PhysiCell_constants::live ); 
 		int cycle_end_index = live.find_phase_index( PhysiCell_constants::live );
+		double p = pCell->state.simple_pressure;
 
-		// if (chem_conc<=5.0)
-		// {	
-		// 	pCell->phenotype.death.rates[apoptosis_model_index] = 0.0001;
-		// }
+		if (o2_conc<=1.0)
+		{	
+			pCell->phenotype.death.rates[apoptosis_model_index] = 0.001;
+			pCell->phenotype.secretion.uptake_rates[o2_ind] = 0.00001;
+		}
 
-		// else {
-
-			cell_defaults.phenotype.secretion.uptake_rates[o2_ind] = 0.0001;
-
+		else {
 			// chemoattractant secretion rate
-			cell_defaults.phenotype.secretion.secretion_rates[chem_ind] = 50.0;
-			cell_defaults.phenotype.secretion.uptake_rates[chem_ind] = 0.0;
-			cell_defaults.phenotype.secretion.saturation_densities[chem_ind] = 100.0;
+			pCell->phenotype.secretion.secretion_rates[chem_ind] = 1.0;
+		}
 
-			pCell->phenotype.death.rates[apoptosis_model_index] = 0.00004;
-			cell_defaults.phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.0166; 
-
-			infection_cell.phenotype.mechanics.cell_cell_adhesion_strength = 0.1; 
-			infection_cell.phenotype.mechanics.cell_cell_repulsion_strength = 20.0;
-		//}
+		if (p >=0.4){
+			phenotype.death.rates[apoptosis_model_index] = 0.0005;
+		}
 
 	return;
 
@@ -431,22 +409,22 @@ void update_infection_motility( Cell* pCell, Phenotype& phenotype, double dt )
 			return; 
 		}
 
-		static int o2_ind = microenvironment.find_density_index( "oxygen" );
-		static int chem_ind = microenvironment.find_density_index( "chemoattractant" );
+		int o2_ind = microenvironment.find_density_index( "oxygen" );
+		int chem_ind = microenvironment.find_density_index( "chemoattractant" );
 
 		double o2_conc = pCell->nearest_density_vector()[o2_ind]; 
 		double chem_conc = pCell->nearest_density_vector()[chem_ind]; 
 
-		 if (chem_conc>=10.0) {
+		 if (chem_conc>=20.0) {
 			pCell->phenotype.motility.is_motile = false;
 		}
 
 		else if(chem_conc<10.0){
-			pCell->phenotype.motility.is_motile = true;
-			pCell->phenotype.motility.migration_bias = 0.6;
-			pCell->phenotype.motility.migration_speed = 0.3;
+			phenotype.motility.is_motile = true;
+			phenotype.motility.migration_bias = 0.5;
+			phenotype.motility.migration_speed = 0.3;
 			phenotype.motility.migration_bias_direction = pCell->nearest_gradient(chem_ind);	
-			normalize( &( phenotype.motility.migration_bias_direction ) );
+			normalize( &( pCell->phenotype.motility.migration_bias_direction ) );
 		}
 
 		return; 
@@ -463,37 +441,35 @@ void update_scout_phenotype (Cell* pCell, Phenotype& phenotype, double dt){
 		}
 
 	int apoptosis_model_index = cell_defaults.phenotype.death.find_death_model_index( "Apoptosis" );
-	static int o2_ind = microenvironment.find_density_index( "oxygen" );
+	int o2_ind = microenvironment.find_density_index( "oxygen" );
 	double o2_conc = pCell->nearest_density_vector()[o2_ind]; 
-	int cycle_start_index = live.find_phase_index( PhysiCell_constants::live ); 
-	int cycle_end_index = live.find_phase_index( PhysiCell_constants::live );
 
-	if ((o2_conc < 5.0))
+	if (total_conc <= 10.0)
 		{
-			pCell->phenotype.death.rates[apoptosis_model_index] = 0.00001;
-			cell_defaults.phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.00001;
+			phenotype.death.rates[apoptosis_model_index] = 0.001;
 		}
-}
+
+		return;
+	}
+
 
 void update_scout_motility( Cell* pCell, Phenotype& phenotype, double dt ){
 
-		if( phenotype.death.dead == true || pCell->is_out_of_domain == true)
-		{ 
+		if( phenotype.death.dead == true)
+			{ 
 			pCell->functions.update_migration_bias = NULL; 
 			pCell->functions.update_phenotype = NULL;
 			pCell->functions.custom_cell_rule = NULL;
 			return; 
-		}
+			}
 
 		int chem_index = microenvironment.find_density_index( "chemoattractant" );
 		double chem_conc = pCell->nearest_density_vector()[chem_index];
-		int mem_index = microenvironment.find_density_index( "mem_attractant" );
-		static int t1 = pCell->custom_data.find_variable_index( "trained" );
-		static int w = pCell->custom_data.find_variable_index("wait_time");
+		int train = pCell->custom_data.find_variable_index( "trained" );
 
-		if ((chem_conc>0.5) && (pCell->custom_data[t1] == 0.0)){
-		pCell->phenotype.motility.migration_bias = 0.5;
-		pCell->phenotype.motility.migration_speed = 0.3;
+		if ((chem_conc>0.01) && (pCell->custom_data[train] == 0.0)){
+		phenotype.motility.migration_bias = 0.6;
+		phenotype.motility.migration_speed = 0.6;
 		phenotype.motility.migration_bias_direction = pCell->nearest_gradient(chem_index);	
 		normalize( &( phenotype.motility.migration_bias_direction ) );
 	}
@@ -504,7 +480,7 @@ void update_scout_motility( Cell* pCell, Phenotype& phenotype, double dt ){
 
 void scout_rule( Cell* pCell, Phenotype& phenotype, double dt ){
 
-		if( phenotype.death.dead == true || pCell->is_out_of_domain == true)
+		if( phenotype.death.dead == true)
 		{ 
 			pCell->functions.update_migration_bias = NULL; 
 			pCell->functions.update_phenotype = NULL;
@@ -512,8 +488,8 @@ void scout_rule( Cell* pCell, Phenotype& phenotype, double dt ){
 			return; 
 		}
 
-		Cell* pC = NULL ;
-		static int t1 = pCell->custom_data.find_variable_index( "trained" );
+		Cell* pC = NULL;
+		static int train = pCell->custom_data.find_variable_index( "trained" );
 		static int w = pCell->custom_data.find_variable_index("wait_time");
 		
 		int mem_index = microenvironment.find_density_index( "mem_attractant" );
@@ -524,7 +500,7 @@ void scout_rule( Cell* pCell, Phenotype& phenotype, double dt ){
 		int cycle_start_index = live.find_phase_index( PhysiCell_constants::live ); 
 		int cycle_end_index = live.find_phase_index( PhysiCell_constants::live );
 		
-		if(pCell->custom_data[t1] == 0.0)
+		if(pCell->custom_data[train] == 0.0)
 			{
 			for( int n=0 ; n < pCell->cells_in_my_container().size() ; n++ ) {
 			pC = pCell->cells_in_my_container()[n]; 
@@ -537,11 +513,9 @@ void scout_rule( Cell* pCell, Phenotype& phenotype, double dt ){
 			double distance = norm(dist);
 			int temp = pC->custom_data.find_variable_index("signal");
 
-				if((distance <= 15.0) && (pC->custom_data[temp] >= 0.7))
+				if((distance <= 15.0) && (pC->type == 0))
 				{	
-				//printf("\nTrained, %d", pCell->ID);
-				pCell->custom_data[t1] = 1.0;
-				scout_cell.phenotype.mechanics.cell_cell_repulsion_strength = 30.0;
+				pCell->custom_data[train] = 1.0;
 				break;
 				} 
 
@@ -552,21 +526,23 @@ void scout_rule( Cell* pCell, Phenotype& phenotype, double dt ){
 
 		pCell->custom_data[w] = pCell->custom_data[w] + dt;
 
-		if((pCell->custom_data[t1] > 0.8) && (pCell->custom_data[w] >= wait_time)){
-			pCell->phenotype.motility.is_motile = true;
+		if((pCell->custom_data[train] > 0.5) && (pCell->custom_data[w] >= wait_time)){
+			phenotype.mechanics.cell_cell_repulsion_strength = 30.0;
+			phenotype.motility.is_motile = true;
 			phenotype.motility.migration_bias_direction = pCell->nearest_gradient(mem_index);	
 			normalize( &( phenotype.motility.migration_bias_direction ) );
-			pCell->phenotype.motility.migration_bias = 0.6;
-			pCell->phenotype.motility.migration_speed = 0.8;
-			cell_defaults.phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.025;
+			
+			phenotype.motility.migration_bias = 0.6;
+			phenotype.motility.migration_speed = 0.8;
+			phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.016;
 			}
 
-		if ((pos[0] >= x_1-20.0 || pos[0] <= x_0+20.0 || pos[1] >= y_1-20.0 || pos[1] <= y_0+20.0) && (pCell->custom_data[t1] > 0.8)){
+
+		if ((pos[0] >= x_1-20.0 || pos[0] <= x_0+20.0 || pos[1] >= y_1-20.0 || pos[1] <= y_0+20.0) && (pCell->custom_data[train] > 0.5)){
 				
 				#pragma omp critical
-				scouts_left += 1;
-				printf("\n****** scouts left: %d\n", scouts_left);
-				pCell->phenotype.motility.is_motile = false;	
+				scouts_left += 1;	
+				printf("\n***** scouts left, %d\n", scouts_left);
 				pCell->functions.update_migration_bias = NULL; 
 				pCell->functions.update_phenotype = NULL;
 				pCell->functions.custom_cell_rule = NULL;
@@ -579,6 +555,7 @@ void scout_rule( Cell* pCell, Phenotype& phenotype, double dt ){
 
 void update_immune_phenotype (Cell* pCell, Phenotype& phenotype, double dt){
 
+
 	if( phenotype.death.dead == true )
 		{ 
 			pCell->functions.update_migration_bias = NULL; 
@@ -587,22 +564,30 @@ void update_immune_phenotype (Cell* pCell, Phenotype& phenotype, double dt){
 			return; 
 		}
 
-	int apoptosis_model_index = cell_defaults.phenotype.death.find_death_model_index( "Apoptosis" );
-	static int o2_ind = microenvironment.find_density_index( "oxygen" );
-	double o2_conc = pCell->nearest_density_vector()[o2_ind]; 
-	int cycle_start_index = live.find_phase_index( PhysiCell_constants::live ); 
-	int cycle_end_index = live.find_phase_index( PhysiCell_constants::live );
+		int apoptosis_model_index = cell_defaults.phenotype.death.find_death_model_index( "Apoptosis" );
+		int chem_ind = microenvironment.find_density_index( "chemoattractant" );
+		double chem_conc = pCell->nearest_density_vector()[chem_ind]; 
+		
+		int cycle_start_index = live.find_phase_index( PhysiCell_constants::live ); 
+		int cycle_end_index = live.find_phase_index( PhysiCell_constants::live );
 
-	if ((o2_conc < 5.0))
+		double p = pCell->state.simple_pressure;
+
+	if (chem_conc >= 5.0)
 		{
-			pCell->phenotype.death.rates[apoptosis_model_index] = 0.00004;
-			cell_defaults.phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.0166;
+			phenotype.death.rates[apoptosis_model_index] = 0.0001;
+			phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.014;
 		}
+
+	else{
+			phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.0;
+	}	
+		return;
 }
 
 void update_immune_motility( Cell* pCell, Phenotype& phenotype, double dt ){
 
-		if( phenotype.death.dead == true || pCell->is_out_of_domain == true)
+		if( phenotype.death.dead == true)
 		{ 
 			pCell->functions.update_migration_bias = NULL; 
 			pCell->functions.update_phenotype = NULL;
@@ -611,13 +596,11 @@ void update_immune_motility( Cell* pCell, Phenotype& phenotype, double dt ){
 		}
 
 		int chem_index = microenvironment.find_density_index( "chemoattractant" );
-		double chem_conc = pCell->nearest_density_vector()[chem_index];
-		static int w = pCell->custom_data.find_variable_index("wait_time");
-
-		pCell->phenotype.motility.migration_bias = 0.6;
-		pCell->phenotype.motility.migration_speed = 0.7;
+		phenotype.motility.migration_bias = 0.6;
+		phenotype.motility.migration_speed = 0.45;
 		phenotype.motility.migration_bias_direction = pCell->nearest_gradient(chem_index);	
 		normalize( &( phenotype.motility.migration_bias_direction ) );
+
 
 	return;
 }
@@ -625,23 +608,31 @@ void update_immune_motility( Cell* pCell, Phenotype& phenotype, double dt ){
 
 void immune_rule( Cell* pCell, Phenotype& phenotype, double dt ){
 
-		if( phenotype.death.dead == true || pCell->is_out_of_domain == true)
-		{ 
+
+		if( phenotype.death.dead == true)
+		{ 	
 			pCell->functions.update_migration_bias = NULL; 
 			pCell->functions.update_phenotype = NULL;
 			pCell->functions.custom_cell_rule = NULL;
 			return; 
 		}
 
-		Cell* pC = NULL ;
+		Cell* pC = NULL;
 		std::vector<double> pos = pCell->position;
 
 		int cycle_start_index = live.find_phase_index( PhysiCell_constants::live ); 
 		int cycle_end_index = live.find_phase_index( PhysiCell_constants::live );
-
 		int apoptosis_model_index = cell_defaults.phenotype.death.find_death_model_index( "Apoptosis" );
+
+		// int o2_index = microenvironment.find_density_index( "oxygen" );
+
+		int chem_ind = microenvironment.find_density_index( "chemoattractant" );
+		double chem_conc = pCell->nearest_density_vector()[chem_ind]; 
+
+		int mem_index = microenvironment.find_density_index( "mem_attractant" );
 		
 		for( int n=0 ; n < pCell->cells_in_my_container().size() ; n++ ) {
+
 		pC = pCell->cells_in_my_container()[n]; 
 
 		if( (pC != pCell))
@@ -650,15 +641,38 @@ void immune_rule( Cell* pCell, Phenotype& phenotype, double dt ){
 		std::vector<double> dist = pC->position;
 		dist -= pCell->position;
 		double distance = norm(dist);
-		int temp = pC->custom_data.find_variable_index("signal");
 
-			if((distance <= 15.0) && (pC->custom_data[temp] >= 0.7))
+			if(distance <= 15.0)
 			{	
+			if (pC->type == 0){
 			pC->start_death(apoptosis_model_index);
-			pCell->phenotype.death.rates[apoptosis_model_index] = 0.0001;
+			phenotype.death.rates[apoptosis_model_index] = 0.0005;
+			//phenotype.motility.is_motile = false;
+			}
+
+			if(pCell->cells_in_my_container().size() >= 4 && pC->type == 2){
+				pCell->phenotype.death.rates[apoptosis_model_index] = 9999; 
 			} 
 
 		}
+	}
+	
+	}
+
+	if(total_conc <= 10.0){
+			phenotype.motility.migration_bias = 0.6;
+			phenotype.motility.migration_speed = 0.7;
+			phenotype.motility.migration_bias_direction = pCell->nearest_gradient(mem_index);	
+			normalize( &( phenotype.motility.migration_bias_direction ) );
+	}
+
+	if ((pos[0] >= x_1-20.0 || pos[0] <= x_0+20.0 || pos[1] >= y_1-20.0 || pos[1] <= y_0+20.0)){
+				#pragma omp critical	
+				printf("\n***** scouts left, %d\n", scouts_left);
+				pCell->functions.update_migration_bias = NULL; 
+				pCell->functions.update_phenotype = NULL;
+				pCell->functions.custom_cell_rule = NULL;
+				pCell->flag_for_removal();
 	}
 
 	return;
@@ -668,8 +682,6 @@ void immune_rule( Cell* pCell, Phenotype& phenotype, double dt ){
 // Defining my own custom coloring function
 std::vector<std::string> my_coloring_function( Cell* pCell )
 {
-	// color based on alive and dead cells but can start 
-	// with the simple coloring scheme. 
 	
 	std::vector<std::string> output = false_cell_coloring_cytometry(pCell); 
 	
@@ -708,10 +720,10 @@ std::vector<std::string> my_coloring_function( Cell* pCell )
 
 	if( pCell->phenotype.death.dead == false && pCell->type == 2 )
 	{
-		output[1] = "cyan";
-		output[3] = "cyan";
-		output[0] = "cyan"; 
-		output[2] = "cyan";
+		output[1] = "blue";
+		output[3] = "blue";
+		output[0] = "blue"; 
+		output[2] = "blue";
 
 	}
 	else if( pCell->phenotype.death.dead == true && pCell->type == 2 )
@@ -728,38 +740,42 @@ std::vector<std::string> my_coloring_function( Cell* pCell )
 
 void ode_func(double dt){
 
-	static int chem_index = microenvironment.find_density_index( "chemoattractant" );
-	double chem_conc = 0.0;
-
+	int chem_index = microenvironment.find_density_index( "chemoattractant" );
 	int scout_cells, new_untrained_cells, new_trained_cells = 0;
-	int number_of_scouts = parameters.ints("number_of_scouts"); 
 
 	// collect the chemoattractant concentration from the domain (all voxels)
 	#pragma omp parallel for 
 	for( int k=0 ; k < microenvironment.number_of_voxels(); k++ )
 	{
-	chem_conc += microenvironment(k)[chem_index];
+	total_conc += microenvironment(k)[chem_index];
 	}
 
-	//printf("time stamp:,%f", dt);
+	printf("\nConc , %f\n", total_conc);
 
-	//# pragma omp critical
-	if ( (chem_conc >= 200.0) & (scouts_left > 0) ) {
+	if ( total_conc >= 100.0 && scouts_left > 0) {
 
-		printf("\nConc. %f , sending in the troops.\n",chem_conc);
-		
 		//spawn cells
-		scout_cells = scouts_left + (dt *  ( (chem_conc  * 0.4 * scouts_left) - (0.05 * scouts_left) - (0.0015 * scouts_left * untrained_immune_cell) ) );
-		
-		new_untrained_cells = new_untrained_cells +  (dt * ( (chem_conc * 0.04 * untrained_immune_cell) - (0.0005 * untrained_immune_cell) - ( 0.00015 * scout_cells * untrained_immune_cell) ) );
-
-		new_trained_cells = new_trained_cells + ( dt * ( (chem_conc * 0.004 * trained_immune_cell) - (0.005 * trained_immune_cell) + (0.15  * scout_cells * untrained_immune_cell) ) - (0.00015 * trained_immune_cell) );
+		scout_cells = fabs( dt * (total_conc  * 0.05 * scouts_left) - (0.05 * scouts_left) - (0.02 * scouts_left * untrained_immune_cell)) ;
+		new_untrained_cells =  fabs(  dt * (total_conc * 0.2 * untrained_immune_cell) - (0.03 * untrained_immune_cell) - ( 0.05 * scout_cells * untrained_immune_cell)) ;
+		new_trained_cells =  fabs(dt * (total_conc * 0.3 * trained_immune_cell) - (0.034 * trained_immune_cell) + (0.003  * scouts_left * untrained_immune_cell) - (0.1 * trained_immune_cell)) ;
 		
 		printf("\n scout cells: %d, untrained cells: %d, trained cells %d\n", scout_cells, new_untrained_cells, new_trained_cells);
+		
+		if (scout_cells < 20){
+			scout_cells = 10;
+		}
+		
+		if (new_trained_cells >25 || new_trained_cells < 5){
+			new_trained_cells = 15;
+		}
+		
+		printf("\n Conc. , %fscout cells: %d, untrained cells: %d, trained cells %d\n", total_conc, scout_cells, new_untrained_cells, new_trained_cells);
+		
 		// call the setup tissue function again.
 		untrained_immune_cell = new_untrained_cells;
 		trained_immune_cell = new_trained_cells;
 		scouts_left = 0;
+		total_conc = 0.0;
 		setup_new_cells(scout_cells, new_trained_cells);
 
 	}
@@ -772,55 +788,26 @@ void setup_new_cells(int scout_cells, int trained_cells){
 	int number_of_scouts = scout_cells;  
 
 	std::cout << "Placing new cells ... " << std::endl; 
-	
-	// randomly place seed cells 
-	
-	std::vector<double> position={5.0, 0.0}; 
-
-	x_0 = default_microenvironment_options.X_range[0]; 
-	x_1 = default_microenvironment_options.X_range[1];
-
-	y_0 = default_microenvironment_options.Y_range[0]; 
-	y_1 = default_microenvironment_options.Y_range[1];
-
-	double x_range = x_1 - x_0; 
-	double y_range = y_1 - y_0; 
-
-	double relative_margin = 0.5;  
-	double relative_outer_margin = 0.04;
 
 	double xperiod = 30.0;
-	double yperiod = 20.0;
+	double yperiod = 30.0;
 
-	low = 0.5;
-	high = 0.6;
-	int signal = 0;
+	std::vector<double> position = {2.0, 1.0, 0.0}; 
 
 	Cell* pC;
 
-	#pragma omp critical
 	for( int n=0 ; n < number_of_scouts ; n++ )
 	{
-		// position[0] = default_microenvironment_options.X_range[0] + x_range*( relative_margin + (1.0-2*relative_margin)*UniformRandom() ); 
-		
-		// position[1] = default_microenvironment_options.Y_range[0] + y_range*( relative_outer_margin + (1.0-2*relative_outer_margin)*UniformRandom() ); 
-
-		//#pragma omp critical
 		position[0] = default_microenvironment_options.X_range[0] + xperiod;
 		position[1] = default_microenvironment_options.Y_range[0] + yperiod;
 		pC = create_cell(scout_cell);
 		pC->assign_position(position); 
-		signal = pC->custom_data.find_variable_index("signal");
-		pC->custom_data[signal] = (low + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(high-low))));
 		xperiod += xperiod;
 	}
 
-	xperiod = 20.0;
-
+	xperiod = 30.0;
 	for( int n=0 ; n < number_of_trained ; n++ )
 	{
-		// position[0] = default_microenvironment_options.X_range[0] + x_range*( relative_margin + (1.0-2*relative_margin)*UniformRandom() ); 
-		// position[1] = default_microenvironment_options.Y_range[0] + y_range*( relative_outer_margin + (1.0-2*relative_outer_margin)*UniformRandom() );  
 		position[0] = default_microenvironment_options.X_range[0] + xperiod;
 		position[1] = default_microenvironment_options.Y_range[1] - yperiod;
 		pC = create_cell(immune_cell);
@@ -828,5 +815,46 @@ void setup_new_cells(int scout_cells, int trained_cells){
 		xperiod += xperiod;
 	}
 
+
 	return;
+}
+
+
+void read_write_function(void)
+{
+
+	std::vector< std::vector<double> > cells_data;  // must a 2D matrix for writing to .mat file
+	std::vector<double> template_vector3(3,0);
+	cells_data.resize(1, template_vector3);
+	cells_data.push_back(template_vector3);
+	
+	
+	for( int i=0 ; i < (*all_cells).size() ; i++ )
+	{
+		Cell* pCell = (*all_cells)[i];
+		if(pCell->type == 0 && pCell->phenotype.death.dead == false)
+		{
+			cells_data[0][0] += 1;
+		}
+		else if(pCell->type == 1 && pCell->phenotype.death.dead == false)
+		{
+			cells_data[0][1] += 1;
+		}			
+		else if(pCell->type == 2 && pCell->phenotype.death.dead == false)
+		{
+			cells_data[0][2] += 1;
+		}		
+		
+	}
+    
+	
+	char filename[1024];
+	sprintf( filename , "%s/new_data%08u.mat" , PhysiCell_settings.folder.c_str(),  PhysiCell_globals.full_output_index ); 
+	
+	// write_matlab4( cells_data , filename, "cells_num");
+	write_matlab( cells_data , filename);
+	
+	
+	return ;
+	
 }

@@ -13,7 +13,7 @@
 	</domain>
 	
 	<overall>
-		<max_time units="min">9000.0</max_time> 
+		<max_time units="min">12000.0</max_time> 
 		<time_units>min</time_units>
 		<space_units>micron</space_units>
 	</overall>
@@ -26,7 +26,7 @@
 		<folder>.</folder>  
 
 		<full_data>
-			<interval units="min">500</interval>
+			<interval units="min">60</interval>
 			<enable>True</enable>
 		</full_data>
 		
